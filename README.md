@@ -53,12 +53,3 @@ Hệ thống sẽ tự động tổng hợp giọng nói AI (TTS bằng Microsof
 ```bash
 python infer.py -i inputs/monalisa.jpg -t "Hello there, my name is Monalisa. Welcome to the museum!"
 ```
-
-## 4. Xử lý lỗi thường gặp
-
-1. **Lỗi báo thiếu Weights hoặc sai đường dẫn file `.pth / .onnx`:**
-   Dọn dẹp thư mục và tiến hành chạy lệnh `./setup.sh` lại để tải đầy đủ tệp.
-2. **Lỗi `CUDA out of memory`:**
-   Card màn hình của bạn không đủ chuẩn.
-3. **Ảnh đầu vào lỗi hoặc vỡ méo không tự nhiên:**
-   Đảm bảo ảnh tĩnh gốc (`-i`) là hình ảnh **chân dung chuẩn**, **rõ khuôn mặt**, nhìn thẳng hoặc nghiêng nhẹ, không bị các vật cản che khuất (như tóc rủ quá dày, tay che mặt).

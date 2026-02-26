@@ -12,7 +12,6 @@ except ImportError:
 
 def text_to_speech(text, output_audio_path):
     print(f"Generating TTS audio for text: '{text}'...")
-    # Use edge-tts to generate audio
     cmd = [
         "edge-tts",
         "--text", text,
@@ -33,9 +32,6 @@ def run_sadtalker(image_path, audio_path, output_dir, output_filename):
     if not os.path.exists(sadtalker_dir):
         print("Error: SadTalker directory not found. Please ensure setup.sh installed it properly.")
         sys.exit(1)
-        
-    # SadTalker outputs to a timestamped subfolder by default. 
-    # We will use a temp result dir, then move the result to the desired path.
     temp_result_dir = os.path.join(output_dir, "sadtalker_temp")
     os.makedirs(temp_result_dir, exist_ok=True)
     
@@ -50,20 +46,15 @@ def run_sadtalker(image_path, audio_path, output_dir, output_filename):
     ]
     
     try:
-        # Run from SadTalker dir
         subprocess.run(cmd, cwd=sadtalker_dir, check=True)
-        
-        # Find the generated video in the temp directory
-        # SadTalker creates a timestamped folder inside result_dir
         generated_file = None
         for root, _, files in os.walk(temp_result_dir):
             for file in files:
-                if file.endswith(".mp4") and "enhanced" in file: # prioritize enhanced video
+                if file.endswith(".mp4") and "enhanced" in file:
                     generated_file = os.path.join(root, file)
                     break
         
         if not generated_file:
-            # Fallback if no 'enhanced' string is found
             for root, _, files in os.walk(temp_result_dir):
                 for file in files:
                     if file.endswith(".mp4"):
@@ -73,7 +64,7 @@ def run_sadtalker(image_path, audio_path, output_dir, output_filename):
         if generated_file:
             final_output_path = os.path.join(output_dir, output_filename)
             shutil.move(generated_file, final_output_path)
-            shutil.rmtree(temp_result_dir) # cleanup temp dir
+            shutil.rmtree(temp_result_dir)
             return final_output_path
         else:
             print("Error: SadTalker finished but no output video was found.")
@@ -87,7 +78,6 @@ def main():
     parser = argparse.ArgumentParser(description="Multi-Modal Emotion & Audio Face Animator")
     parser.add_argument("-i", "--image", required=True, help="Path to the input portrait image.")
     
-    # Optional inputs (user must provide at least one to drive the face)
     parser.add_argument("-e", "--emotion", help="Type of emotion: 'smile', 'sad', 'surprise', or your custom template.")
     parser.add_argument("-a", "--audio", help="Path to a driving audio file (.mp3, .wav) to sync lips.")
     parser.add_argument("-t", "--text", help="Text string to synthesize voice and animate the face.")
@@ -111,9 +101,6 @@ def main():
     base_name = os.path.basename(args.image).split('.')[0]
     
     if args.audio or args.text:
-        # ---------------------------------------------------------
-        # MODE: AUDIO-DRIVEN (SadTalker)
-        # ---------------------------------------------------------
         driving_audio_path = args.audio
         
         if args.text:
@@ -125,11 +112,9 @@ def main():
             # Generate from provided audio
             output_filename = f"animated_{base_name}_audio.mp4"
             
-        print("====================================")
         print(" Starting SadTalker (Audio Mode)    ")
         print(f"Input Image : {args.image}")
         print(f"Input Audio : {driving_audio_path}")
-        print("====================================")
         
         final_video_path = run_sadtalker(args.image, driving_audio_path, args.output_dir, output_filename)
         
@@ -140,13 +125,9 @@ def main():
             os.remove(driving_audio_path)
             
     elif args.emotion:
-        # ---------------------------------------------------------
-        # MODE: EMOTION-DRIVEN (LivePortrait)
-        # ---------------------------------------------------------
         output_filename = f"animated_{base_name}_{args.emotion}.mp4"
         output_path = os.path.join(args.output_dir, output_filename)
 
-        print("====================================")
         print(" Starting LivePortrait Core Animator")
         print(f"Input Image : {args.image}")
         print(f"Emotion     : {args.emotion}")
